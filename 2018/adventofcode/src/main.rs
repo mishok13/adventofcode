@@ -1,10 +1,13 @@
 #[macro_use] extern crate itertools;
+extern crate chrono;
 
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::BufReader;
 use std::path::Path;
 use std::collections::{HashSet, HashMap};
+
+use chrono::prelude::{DateTime, NaiveDateTime, Utc};
 
 
 struct Solution<'a> {
@@ -106,7 +109,6 @@ fn day3part1(path: &Path) -> Option<String> {
     let mut coordinates = HashMap::new();
     for line in read_lines(path) {
         let parts = line.split(' ').collect::<Vec<_>>();
-        let index = parts[0].trim_matches('#').parse::<i32>().unwrap();
         let start = parts[2].trim_matches(':').split(',').map(|index| index.parse::<u32>().unwrap()).collect::<Vec<_>>();
         let size = parts[3].split('x').map(|index| index.parse::<u32>().unwrap()).collect::<Vec<_>>();
         for (x, y) in iproduct!(start[0]..start[0] + size[0], start[1]..start[1] + size[1]) {
@@ -121,7 +123,6 @@ fn day3part2(path: &Path) -> Option<String> {
     let mut coordinates = HashMap::new();
     for line in read_lines(path) {
         let parts = line.split(' ').collect::<Vec<_>>();
-        let index = parts[0].trim_matches('#').parse::<i32>().unwrap();
         let start = parts[2].trim_matches(':').split(',').map(|index| index.parse::<u32>().unwrap()).collect::<Vec<_>>();
         let size = parts[3].split('x').map(|index| index.parse::<u32>().unwrap()).collect::<Vec<_>>();
         for (x, y) in iproduct!(start[0]..start[0] + size[0], start[1]..start[1] + size[1]) {
@@ -149,17 +150,30 @@ fn day3part2(path: &Path) -> Option<String> {
     None
 }
 
+fn day4part1(path: &Path) -> Option<String> {
+    let mut lines = read_lines(path).collect::<Vec<_>>();
+    lines.sort();
+    let mut current_guard: u8 = 0;
+    for line in lines {
+        let time = dbg!(line.chars().skip(1).take(16).collect::<String>());
+        dbg!(NaiveDateTime::parse_from_str(&time, "%Y-%m-%d %H:%M"));
+    }
+    None
+}
+
 fn main()  {
     // for day, part, path, solver
     // open path, pass to solver
     // print out returned result
     let solutions = vec![
-        Solution::new("00.txt", 1, 1, day1part1),
-        Solution::new("00.txt", 1, 2, day1part2),
-        Solution::new("01.txt", 2, 1, day2part1),
-        Solution::new("01.txt", 2, 2, day2part2),
-        Solution::new("02.txt", 3, 1, day3part1),
-        Solution::new("02.txt", 3, 1, day3part2),
+        // Solution::new("00.txt", 1, 1, day1part1),
+        // Solution::new("00.txt", 1, 2, day1part2),
+        // Solution::new("01.txt", 2, 1, day2part1),
+        // Solution::new("01.txt", 2, 2, day2part2),
+        // Solution::new("02.txt", 3, 1, day3part1),
+        // Solution::new("02.txt", 3, 1, day3part2),
+        Solution::new("03-test.txt", 4, 1, day4part1),
+        // Solution::new("02.txt", 3, 1, day3part2),
     ];
     for solution in solutions {
         solution.solve()

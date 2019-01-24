@@ -5,3 +5,4 @@ authors = ["Andrii Mishkovskyi <mishok13@gmail.com>"]
 
 [dependencies]
 itertools = "0.8.0"
+chrono = "0.4"
