@@ -1,6 +1,7 @@
 use clap::Parser;
 use regex::Regex;
 use std::char;
+use std::collections::HashSet;
 use std::fs::read_to_string;
 use std::path::PathBuf;
 
@@ -158,6 +159,134 @@ fn day02_2(lines: Vec<String>) -> Option<String> {
     )
 }
 
+#[derive(Debug)]
+enum PartValue {
+    Number(u32),
+    Symbol(String),
+}
+
+#[derive(Debug)]
+struct Part {
+    pos: (usize, usize),
+    value: PartValue,
+}
+
+impl Part {
+    fn adjacent_positions(&self) -> HashSet<(usize, usize)> {
+        let mut res = HashSet::new();
+        let length = match self.value {
+            PartValue::Number(x) => (x.ilog10() + 1) as usize,
+            PartValue::Symbol(_) => 1usize,
+        };
+        for x in (self.pos.0.checked_sub(1).unwrap_or(0))..self.pos.0 + 2 {
+            for y in (self.pos.1.checked_sub(1).unwrap_or(0))..self.pos.1 + 1 + length {
+                res.insert((x, y));
+            }
+        }
+        res
+    }
+}
+
+fn day03_1(lines: Vec<String>) -> Option<String> {
+    let pattern = Regex::new(r"(?<number>\d+)|(?<symbol>[^\.\w])").unwrap();
+    let (numbers, symbols): (Vec<_>, Vec<_>) = lines
+        .iter()
+        .enumerate()
+        .flat_map(|(index, line)| {
+            pattern
+                .captures_iter(line)
+                .map(move |x| match (x.name("number"), x.name("symbol")) {
+                    (_, Some(m)) => Part {
+                        pos: (index.clone(), m.start()),
+                        value: PartValue::Symbol(m.as_str().to_string()),
+                    },
+                    (Some(m), _) => Part {
+                        pos: (index.clone(), m.start()),
+                        value: PartValue::Number(u32::from_str_radix(m.as_str(), 10).unwrap()),
+                    },
+                    _ => panic!("No captures at all!"),
+                })
+        })
+        .partition(|p| matches!(p.value, PartValue::Number(_)));
+    let symbol_positions: HashSet<_> = symbols.iter().map(|p| p.pos).collect();
+    Some(
+        numbers
+            .iter()
+            .map(|p| {
+                p.adjacent_positions();
+                println!("{p:?}");
+                p
+            })
+            .filter_map(|p| match p.value {
+                PartValue::Number(x) => {
+                    if p.adjacent_positions()
+                        .iter()
+                        .any(|pos| symbol_positions.contains(pos))
+                    {
+                        Some(x)
+                    } else {
+                        None
+                    }
+                }
+                _ => None,
+            })
+            .sum::<u32>()
+            .to_string(),
+    )
+}
+
+fn day03_2(lines: Vec<String>) -> Option<String> {
+    let pattern = Regex::new(r"(?<number>\d+)|(?<symbol>[^\.\w])").unwrap();
+    let (numbers, symbols): (Vec<_>, Vec<_>) = lines
+        .iter()
+        .enumerate()
+        .flat_map(|(index, line)| {
+            pattern
+                .captures_iter(line)
+                .map(move |x| match (x.name("number"), x.name("symbol")) {
+                    (_, Some(m)) => Part {
+                        pos: (index.clone(), m.start()),
+                        value: PartValue::Symbol(m.as_str().to_string()),
+                    },
+                    (Some(m), _) => Part {
+                        pos: (index.clone(), m.start()),
+                        value: PartValue::Number(u32::from_str_radix(m.as_str(), 10).unwrap()),
+                    },
+                    _ => panic!("No captures at all!"),
+                })
+        })
+        .partition(|p| matches!(p.value, PartValue::Number(_)));
+    Some(
+        symbols
+            .iter()
+            .filter_map(|p| match &p.value {
+                PartValue::Symbol(s) if s == "*" => Some(p.pos),
+                _ => None,
+            })
+            .filter_map(|p| {
+                let adjacents: Vec<_> = numbers
+                    .iter()
+                    .filter(|n| n.adjacent_positions().contains(&p))
+                    .collect();
+                if adjacents.len() == 2 {
+                    Some(
+                        (match adjacents[0].value {
+                            PartValue::Number(x) => x,
+                            _ => 0,
+                        }) * (match adjacents[1].value {
+                            PartValue::Number(x) => x,
+                            _ => 0,
+                        }),
+                    )
+                } else {
+                    None
+                }
+            })
+            .sum::<u32>()
+            .to_string(),
+    )
+}
+
 fn main() {
     let cli = Cli::parse();
     let lines = cli
@@ -175,6 +304,8 @@ fn main() {
         ("1", "2") => day01_2(lines),
         ("2", "1") => day02_1(lines),
         ("2", "2") => day02_2(lines),
+        ("3", "1") => day03_1(lines),
+        ("3", "2") => day03_2(lines),
         _ => None,
     };
 
@@ -229,6 +360,28 @@ Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green";
         assert_eq!(
             day02_2(lines.lines().map(String::from).collect()),
             Some("2286".into())
+        );
+    }
+
+    #[test]
+    fn test03() {
+        let lines = "467..114..
+...*......
+..35..633.
+......#...
+617*......
+.....+.58.
+..592.....
+......755.
+...$.*....
+.664.598..";
+        assert_eq!(
+            day03_1(lines.lines().map(String::from).collect()),
+            Some("4361".into())
+        );
+        assert_eq!(
+            day03_2(lines.lines().map(String::from).collect()),
+            Some("467835".into())
         );
     }
 }
