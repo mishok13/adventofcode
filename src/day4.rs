@@ -1,5 +1,5 @@
 use regex::{Match, Regex};
-use std::collections::{BTreeMap, HashSet};
+use std::collections::HashSet;
 
 fn parse_str(m: Match) -> HashSet<u32> {
     m.as_str()
@@ -37,38 +37,17 @@ pub fn part2(lines: Vec<String>) -> Option<String> {
         lines
             .iter()
             .enumerate()
-            .map(|(index, line)| {
+            .fold(vec![1u32; lines.len()], |mut acc, (index, line)| {
                 let captures = pattern.captures(line).unwrap();
                 let winning = captures.name("winning").map(parse_str).unwrap();
                 let hand = captures.name("hand").map(parse_str).unwrap();
                 let wins = hand.intersection(&winning).count();
-                if wins > 0 {
-                    (
-                        index,
-                        (0..wins)
-                            .filter_map(|x| x.checked_add(index + 1))
-                            .collect::<Vec<_>>(),
-                    )
-                } else {
-                    (index, vec![])
-                }
-            })
-            .fold(BTreeMap::new(), |mut acc, (index, values)| {
-                let times = acc
-                    .entry(index)
-                    .and_modify(|x| *x += 1)
-                    .or_insert(1)
-                    .to_owned();
-                if !values.is_empty() {
-                    for value in values.into_iter() {
-                        acc.entry(value)
-                            .and_modify(|x| *x += times)
-                            .or_insert(times);
-                    }
+                for offset in 0..wins {
+                    acc[offset + 1 + index] += acc[index]
                 }
                 acc
             })
-            .values()
+            .iter()
             .sum::<u32>()
             .to_string(),
     )
