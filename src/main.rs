@@ -1,4 +1,5 @@
 mod day4;
+mod day5;
 
 use clap::Parser;
 use regex::Regex;
@@ -310,6 +311,8 @@ fn main() {
         ("3", "2") => day03_2(lines),
         ("4", "1") => day4::part1(lines),
         ("4", "2") => day4::part2(lines),
+        ("5", "1") => day5::part1(lines),
+        ("5", "2") => day5::part2(lines),
         _ => None,
     };
 
