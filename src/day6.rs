@@ -1,9 +1,7 @@
 use itertools::Itertools;
 
 fn parse_str(s: &str) -> Vec<f64> {
-    s.split(' ')
-        .filter_map(|s| s.parse::<f64>().ok())
-        .collect()
+    s.split(' ').filter_map(|s| s.parse::<f64>().ok()).collect()
 }
 
 pub fn part1(lines: Vec<String>) -> Option<String> {

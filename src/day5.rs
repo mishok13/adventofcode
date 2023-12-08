@@ -45,9 +45,7 @@ impl Game {
             .map(|seed| {
                 let mut result = *seed;
                 for map in self.maps.iter() {
-                    if let Some(update) =
-                        map.iter().filter_map(|x| x.path(&result)).nth(0)
-                    {
+                    if let Some(update) = map.iter().filter_map(|x| x.path(&result)).nth(0) {
                         result = update;
                     }
                 }
@@ -71,8 +69,7 @@ impl Game {
                     .map(|seed| {
                         let mut result = seed;
                         for map in self.maps.iter() {
-                            if let Some(update) =
-                                map.iter().filter_map(|x| x.path(&result)).nth(0)
+                            if let Some(update) = map.iter().filter_map(|x| x.path(&result)).nth(0)
                             {
                                 result = update;
                             }

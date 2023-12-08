@@ -19,11 +19,11 @@ struct Cli {
     input: Option<PathBuf>,
 }
 
-fn day01_1(mut input: Vec<String>) -> Option<String> {
+fn day01_1(input: Vec<String>) -> Option<String> {
     input
-        .iter_mut()
+        .iter()
         .map(|line| {
-            let candidate = &format!(
+            format!(
                 "{}{}",
                 line.chars()
                     .nth(line.find(|c| char::is_digit(c, 10)).unwrap())
@@ -31,8 +31,9 @@ fn day01_1(mut input: Vec<String>) -> Option<String> {
                 line.chars()
                     .nth(line.rfind(|c| char::is_digit(c, 10)).unwrap())
                     .unwrap(),
-            )[..];
-            u32::from_str_radix(candidate, 10).unwrap()
+            )[..]
+                .parse::<u32>()
+                .unwrap()
         })
         .reduce(|acc, s| acc + s)
         .map(|total| format!("{}", total))
@@ -49,11 +50,13 @@ fn day01_2(input: Vec<String>) -> Option<String> {
                 let backward_line = line.chars().rev().collect::<String>();
                 let forward_match = forward_pattern
                     .find_iter(line)
-                    .map(|m| m.as_str()).next()
+                    .map(|m| m.as_str())
+                    .next()
                     .unwrap();
                 let backward_match = backward_pattern
                     .find_iter(&backward_line)
-                    .map(|m| m.as_str()).next()
+                    .map(|m| m.as_str())
+                    .next()
                     .unwrap();
                 10 * match_english_to_digit(forward_match) + match_english_to_digit(backward_match)
             })
@@ -84,9 +87,12 @@ fn day02_1(lines: Vec<String>) -> Option<String> {
         lines
             .iter()
             .filter_map(|line| {
-                let game_id =
-                    u32::from_str_radix(&game_pattern.captures(line).unwrap()["game_id"], 10)
-                        .unwrap();
+                let game_id: u32 = game_pattern
+                    .captures(line)
+                    .unwrap()
+                    .name("game_id")
+                    .map(|m| m.as_str().parse().unwrap())
+                    .unwrap();
                 let rest = &game_pattern.captures(line).unwrap()["plays"];
                 let plays: Vec<Vec<(String, u32)>> = rest
                     .split(';')
@@ -96,7 +102,7 @@ fn day02_1(lines: Vec<String>) -> Option<String> {
                                 let captures = step_pattern.captures(step).unwrap();
                                 (
                                     captures["color"].to_string(),
-                                    u32::from_str_radix(&captures["amount"], 10).unwrap(),
+                                    captures["amount"].parse().unwrap(),
                                 )
                             })
                             .collect()
@@ -133,7 +139,7 @@ fn day02_2(lines: Vec<String>) -> Option<String> {
                                 let captures = step_pattern.captures(step).unwrap();
                                 (
                                     captures["color"].to_string(),
-                                    u32::from_str_radix(&captures["amount"], 10).unwrap(),
+                                    captures["amount"].parse().unwrap(),
                                 )
                             })
                             .collect()

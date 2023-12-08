@@ -2,7 +2,7 @@ use std::cmp::Ordering;
 
 use itertools::Itertools;
 
-#[derive(Debug, PartialEq, Ord, Eq)]
+#[derive(Debug, PartialEq, Eq)]
 struct Hand {
     cards: Vec<u8>,
     bet: u64,
@@ -104,19 +104,25 @@ enum Type {
     FiveOfAKind,
 }
 
-impl PartialOrd for Hand {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        match self.type_.partial_cmp(&other.type_) {
-            Some(Ordering::Equal) => self
+impl Ord for Hand {
+    fn cmp(&self, other: &Self) -> Ordering {
+        match self.type_.cmp(&other.type_) {
+            Ordering::Equal => self
                 .cards
                 .iter()
                 .zip(other.cards.iter())
                 .skip_while(|(s, o)| **s == **o)
-                .map(|(s, o)| s.partial_cmp(o))
+                .map(|(s, o)| s.cmp(o))
                 .nth(0)
                 .unwrap(),
             x => x,
         }
+    }
+}
+
+impl PartialOrd for Hand {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
     }
 }
 

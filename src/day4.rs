@@ -5,8 +5,8 @@ fn parse_str(m: Match) -> HashSet<u32> {
     m.as_str()
         .split(' ')
         .filter(|s| !s.is_empty())
-        .map(|s| u32::from_str_radix(s, 10).unwrap())
-        .collect::<HashSet<_>>()
+        .map(|s| s.parse().unwrap())
+        .collect()
 }
 
 pub fn part1(lines: Vec<String>) -> Option<String> {
