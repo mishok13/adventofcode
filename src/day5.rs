@@ -1,6 +1,5 @@
 use core::ops::Range;
 
-use itertools::Itertools;
 use regex::Regex;
 
 #[derive(Debug)]
@@ -47,7 +46,7 @@ impl Game {
                 let mut result = *seed;
                 for map in self.maps.iter() {
                     if let Some(update) =
-                        map.iter().map(|x| x.path(&result)).filter_map(|v| v).nth(0)
+                        map.iter().filter_map(|x| x.path(&result)).nth(0)
                     {
                         result = update;
                     }
@@ -69,12 +68,11 @@ impl Game {
             .iter()
             .map(|r| {
                 r.clone()
-                    .into_iter()
                     .map(|seed| {
                         let mut result = seed;
                         for map in self.maps.iter() {
                             if let Some(update) =
-                                map.iter().map(|x| x.path(&result)).filter_map(|v| v).nth(0)
+                                map.iter().filter_map(|x| x.path(&result)).nth(0)
                             {
                                 result = update;
                             }
@@ -101,12 +99,12 @@ pub fn part1(lines: Vec<String>) -> Option<String> {
                         .name("seeds")
                         .unwrap()
                         .as_str()
-                        .split(" ")
+                        .split(' ')
                         .for_each(|x| acc.seeds.push(x.parse::<usize>().unwrap()))
                 })
                 .unwrap();
         } else {
-            if line == "" {
+            if line.is_empty() {
                 acc.maps.push(Vec::new());
             }
             if let Some(captures) = maps_pattern.captures(line) {
@@ -151,12 +149,12 @@ pub fn part2(lines: Vec<String>) -> Option<String> {
                         .name("seeds")
                         .unwrap()
                         .as_str()
-                        .split(" ")
+                        .split(' ')
                         .for_each(|x| acc.seeds.push(x.parse::<usize>().unwrap()))
                 })
                 .unwrap();
         } else {
-            if line == "" {
+            if line.is_empty() {
                 acc.maps.push(Vec::new());
             }
             if let Some(captures) = maps_pattern.captures(line) {

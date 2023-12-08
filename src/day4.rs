@@ -3,7 +3,7 @@ use std::collections::HashSet;
 
 fn parse_str(m: Match) -> HashSet<u32> {
     m.as_str()
-        .split(" ")
+        .split(' ')
         .filter(|s| !s.is_empty())
         .map(|s| u32::from_str_radix(s, 10).unwrap())
         .collect::<HashSet<_>>()

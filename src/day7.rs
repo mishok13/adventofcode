@@ -10,8 +10,8 @@ struct Hand {
 }
 
 impl Hand {
-    fn new(s: &String) -> Self {
-        let (left, right) = s.split_once(" ").unwrap();
+    fn new(s: &str) -> Self {
+        let (left, right) = s.split_once(' ').unwrap();
         let cards: Vec<_> = left
             .chars()
             .map(|c| match c {
@@ -50,8 +50,8 @@ impl Hand {
         Self { cards, bet, type_ }
     }
 
-    fn new2(s: &String) -> Self {
-        let (left, right) = s.split_once(" ").unwrap();
+    fn new2(s: &str) -> Self {
+        let (left, right) = s.split_once(' ').unwrap();
         let cards: Vec<_> = left
             .chars()
             .map(|c| match c {
@@ -124,7 +124,7 @@ pub fn part1(lines: Vec<String>) -> Option<String> {
     Some(
         lines
             .iter()
-            .map(Hand::new)
+            .map(|s| Hand::new(s.as_str()))
             .sorted()
             .enumerate()
             .fold(0u64, |acc, (index, hand)| {
@@ -138,7 +138,7 @@ pub fn part2(lines: Vec<String>) -> Option<String> {
     Some(
         lines
             .iter()
-            .map(Hand::new2)
+            .map(|s| Hand::new2(s.as_str()))
             .sorted()
             .enumerate()
             .fold(0u64, |acc, (index, hand)| {

@@ -2,6 +2,8 @@ mod day4;
 mod day5;
 mod day6;
 mod day7;
+mod day8;
+
 use clap::Parser;
 use regex::Regex;
 use std::char;
@@ -47,13 +49,11 @@ fn day01_2(input: Vec<String>) -> Option<String> {
                 let backward_line = line.chars().rev().collect::<String>();
                 let forward_match = forward_pattern
                     .find_iter(line)
-                    .map(|m| m.as_str())
-                    .nth(0)
+                    .map(|m| m.as_str()).next()
                     .unwrap();
                 let backward_match = backward_pattern
                     .find_iter(&backward_line)
-                    .map(|m| m.as_str())
-                    .nth(0)
+                    .map(|m| m.as_str()).next()
                     .unwrap();
                 10 * match_english_to_digit(forward_match) + match_english_to_digit(backward_match)
             })
@@ -85,13 +85,13 @@ fn day02_1(lines: Vec<String>) -> Option<String> {
             .iter()
             .filter_map(|line| {
                 let game_id =
-                    u32::from_str_radix(&game_pattern.captures(&line).unwrap()["game_id"], 10)
+                    u32::from_str_radix(&game_pattern.captures(line).unwrap()["game_id"], 10)
                         .unwrap();
-                let rest = &game_pattern.captures(&line).unwrap()["plays"];
+                let rest = &game_pattern.captures(line).unwrap()["plays"];
                 let plays: Vec<Vec<(String, u32)>> = rest
-                    .split(";")
+                    .split(';')
                     .map(|play| {
-                        play.split(",")
+                        play.split(',')
                             .map(|step| {
                                 let captures = step_pattern.captures(step).unwrap();
                                 (
@@ -124,11 +124,11 @@ fn day02_2(lines: Vec<String>) -> Option<String> {
         lines
             .iter()
             .map(|line| {
-                let rest = &game_pattern.captures(&line).unwrap()["plays"];
+                let rest = &game_pattern.captures(line).unwrap()["plays"];
                 let plays: Vec<Vec<(String, u32)>> = rest
-                    .split(";")
+                    .split(';')
                     .map(|play| {
-                        play.split(",")
+                        play.split(',')
                             .map(|step| {
                                 let captures = step_pattern.captures(step).unwrap();
                                 (
@@ -182,8 +182,8 @@ impl Part {
             PartValue::Number(x) => (x.ilog10() + 1) as usize,
             PartValue::Symbol(_) => 1usize,
         };
-        for x in (self.pos.0.checked_sub(1).unwrap_or(0))..self.pos.0 + 2 {
-            for y in (self.pos.1.checked_sub(1).unwrap_or(0))..self.pos.1 + 1 + length {
+        for x in self.pos.0.saturating_sub(1)..self.pos.0 + 2 {
+            for y in self.pos.1.saturating_sub(1)..self.pos.1 + 1 + length {
                 res.insert((x, y));
             }
         }
@@ -201,12 +201,12 @@ fn day03_1(lines: Vec<String>) -> Option<String> {
                 .captures_iter(line)
                 .map(move |x| match (x.name("number"), x.name("symbol")) {
                     (_, Some(m)) => Part {
-                        pos: (index.clone(), m.start()),
+                        pos: (index, m.start()),
                         value: PartValue::Symbol(m.as_str().to_string()),
                     },
                     (Some(m), _) => Part {
-                        pos: (index.clone(), m.start()),
-                        value: PartValue::Number(u32::from_str_radix(m.as_str(), 10).unwrap()),
+                        pos: (index, m.start()),
+                        value: PartValue::Number(m.as_str().parse().unwrap()),
                     },
                     _ => panic!("No captures at all!"),
                 })
@@ -249,12 +249,12 @@ fn day03_2(lines: Vec<String>) -> Option<String> {
                 .captures_iter(line)
                 .map(move |x| match (x.name("number"), x.name("symbol")) {
                     (_, Some(m)) => Part {
-                        pos: (index.clone(), m.start()),
+                        pos: (index, m.start()),
                         value: PartValue::Symbol(m.as_str().to_string()),
                     },
                     (Some(m), _) => Part {
-                        pos: (index.clone(), m.start()),
-                        value: PartValue::Number(u32::from_str_radix(m.as_str(), 10).unwrap()),
+                        pos: (index, m.start()),
+                        value: PartValue::Number(m.as_str().parse().unwrap()),
                     },
                     _ => panic!("No captures at all!"),
                 })
@@ -318,6 +318,8 @@ fn main() {
         ("6", "2") => day6::part2(lines),
         ("7", "1") => day7::part1(lines),
         ("7", "2") => day7::part2(lines),
+        ("8", "1") => day8::part1(lines),
+        ("8", "2") => day8::part2(lines),
         _ => None,
     };
 
