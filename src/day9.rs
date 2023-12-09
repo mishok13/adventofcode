@@ -34,6 +34,17 @@ impl Progression {
             starts: vec![],
         }
     }
+
+    fn solve(&mut self) -> i128 {
+        while !self.is_arithmetic() {
+            self.down();
+        }
+        self.expand();
+        while !self.starts.is_empty() {
+            self.up();
+        }
+        *self.values.last().unwrap()
+    }
 }
 
 fn diffs(values: &[i128]) -> Vec<i128> {
@@ -57,17 +68,7 @@ pub fn part1(lines: Vec<String>) -> Option<i128> {
     lines
         .iter()
         .map(|line| util::parse_space_separated_str(line))
-        .map(|v| {
-            let mut p = Progression::new(&v);
-            while !p.is_arithmetic() {
-                p.down();
-            }
-            p.expand();
-            while !p.starts.is_empty() {
-                p.up();
-            }
-            *p.values.last().unwrap()
-        })
+        .map(|v| Progression::new(&v).solve())
         .reduce(|a, b| a + b)
 }
 
@@ -77,16 +78,9 @@ pub fn part2(lines: Vec<String>) -> Option<i128> {
         .map(|line| util::parse_space_separated_str(line))
         .map(|mut v| {
             v.reverse();
-            let mut p = Progression::new(&v);
-            while !p.is_arithmetic() {
-                p.down();
-            }
-            p.expand();
-            while !p.starts.is_empty() {
-                p.up();
-            }
-            *p.values.last().unwrap()
+            v
         })
+        .map(|v| Progression::new(&v).solve())
         .reduce(|a, b| a + b)
 }
 
