@@ -1,3 +1,4 @@
+mod day10;
 mod day4;
 mod day5;
 mod day6;
@@ -330,6 +331,8 @@ fn main() {
         ("8", "2") => day8::part2(lines),
         ("9", "1") => day9::part1(lines).map(|x| x.to_string()),
         ("9", "2") => day9::part2(lines).map(|x| x.to_string()),
+        ("10", "1") => day10::part1(lines).map(|x| x.to_string()),
+        ("10", "2") => day10::part2(lines).map(|x| x.to_string()),
         _ => None,
     };
 
