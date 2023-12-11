@@ -1,6 +1,8 @@
+use std::collections::HashSet;
+
 use itertools::Itertools;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 enum Tile {
     NS,
     EW,
@@ -145,13 +147,20 @@ impl Sewer {
     }
 }
 
+#[derive(Debug)]
+enum State {
+    Outside,
+    Inside,
+    InsideEdge(Tile),
+    OutsideEdge(Tile),
+}
+
 pub fn part1(lines: Vec<String>) -> Option<i128> {
     let sewer = Sewer::new(lines);
     vec![Tile::EW, Tile::NE, Tile::NS]
         .iter()
         .filter_map(|x| sewer.solve(x))
         .map(|x| (x.len() / 2) as i128)
-        .take(1)
         .nth(0)
 
     // println!("west {:?}\n====\n", sewer.solve(Tile::EW));
@@ -161,21 +170,64 @@ pub fn part1(lines: Vec<String>) -> Option<i128> {
 }
 
 pub fn part2(lines: Vec<String>) -> Option<i128> {
-    let sewer = Sewer::new(lines);
-    let res = vec![Tile::EW, Tile::NE, Tile::NS]
+    let mut sewer = Sewer::new(lines);
+    let (direction, solution) = vec![Tile::SW, Tile::NE, Tile::NS]
         .iter()
-        .filter_map(|x| sewer.solve(x))
-        .take(1)
+        .filter_map(|x| sewer.solve(x).map(|solution| (x.clone(), solution)))
         .nth(0)
         .unwrap();
-    println!(
-        "bbox: ({}, {}), ({}, {})",
-        res.iter().min_by_key(|v| v.0).unwrap().0,
-        res.iter().min_by_key(|v| v.1).unwrap().1,
-        res.iter().max_by_key(|v| v.0).unwrap().0,
-        res.iter().max_by_key(|v| v.1).unwrap().1,
-    );
-    None
+    let solution_lookup: HashSet<_> = solution.iter().collect();
+    println!("wtf {:?} {:?}", direction.clone(), solution[0]);
+
+    sewer.tiles[solution[0].0 * sewer.shape.1 + solution[0].1] = direction;
+    let mut inside_count = 0;
+    for row_num in 0..sewer.shape.0 {
+        let mut state = State::Outside;
+        for col_num in 0..sewer.shape.1 {
+            let pos = (row_num, col_num);
+            // println!(
+            //     "next {:?} {:?} {}",
+            //     pos,
+            //     &sewer.tiles[row_num * sewer.shape.1 + col_num],
+            //     solution_lookup.contains(&pos),
+            // );
+            match (
+                &sewer.tiles[row_num * sewer.shape.1 + col_num],
+                &state,
+                solution_lookup.contains(&pos),
+            ) {
+                (_, State::Inside, false) => {
+                    println!("Counting tile at {pos:?}");
+                    inside_count += 1;
+                }
+                (_, State::Outside, false) => {}
+                (tile @ (Tile::SE | Tile::NE), State::Inside, true) => {
+                    state = State::InsideEdge(tile.clone())
+                }
+                (tile @ (Tile::SE | Tile::NE), State::Outside, true) => {
+                    state = State::OutsideEdge(tile.clone())
+                }
+                (Tile::NW, State::InsideEdge(Tile::NE), true) => state = State::Inside,
+                (Tile::NW, State::OutsideEdge(Tile::NE), true) => state = State::Outside,
+
+                (Tile::NW, State::InsideEdge(Tile::SE), true) => state = State::Outside,
+                (Tile::NW, State::OutsideEdge(Tile::SE), true) => state = State::Inside,
+
+                (Tile::SW, State::OutsideEdge(Tile::NE), true) => state = State::Inside,
+                (Tile::SW, State::InsideEdge(Tile::NE), true) => state = State::Outside,
+
+                (Tile::SW, State::OutsideEdge(Tile::SE), true) => state = State::Outside,
+                (Tile::SW, State::InsideEdge(Tile::SE), true) => state = State::Inside,
+
+                (Tile::EW, State::InsideEdge(_) | State::OutsideEdge(_), true) => {}
+                (Tile::NS, State::Inside, true) => state = State::Outside,
+                (Tile::NS, State::Outside, true) => state = State::Inside,
+                _ => todo!(),
+            }
+            println!("{:?} {:?} {}", pos, state, solution_lookup.contains(&pos));
+        }
+    }
+    Some(inside_count)
 }
 
 #[test]
@@ -217,6 +269,36 @@ L|-JF"
 
 #[test]
 fn test_part2() {
-    let lines = "".lines().map(String::from).collect();
-    assert_eq!(part2(lines), None);
+    {
+        let lines = ".F----7F7F7F7F-7....
+.|F--7||||||||FJ....
+.||.FJ||||||||L7....
+FJL7L7LJLJ||LJ.L-7..
+L--J.L7...LJS7F-7L7.
+....F-J..F7FJ|L7L7L7
+....L7.F7||L7|.L7L7|
+.....|FJLJ|FJ|F7|.LJ
+....FJL-7.||.||||...
+....L---J.LJ.LJLJ..."
+            .lines()
+            .map(String::from)
+            .collect();
+        assert_eq!(part2(lines), Some(8));
+    }
+    {
+        let lines = "FF7FSF7F7F7F7F7F---7
+L|LJ||||||||||||F--J
+FL-7LJLJ||||||LJL-77
+F--JF--7||LJLJ7F7FJ-
+L---JF-JLJ.||-FJLJJ7
+|F|F-JF---7F7-L7L|7|
+|FFJF7L7F-JF7|JL---7
+7-L-JL7||F7|L7F-7F7|
+L.L7LFJ|||||FJL7||LJ
+L7JLJL-JLJLJL--JLJ.L"
+            .lines()
+            .map(String::from)
+            .collect();
+        assert_eq!(part2(lines), Some(10));
+    }
 }
