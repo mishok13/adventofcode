@@ -60,25 +60,94 @@ impl Sewer {
         Self { tiles, shape }
     }
 
-    fn compute_position(&self, index: usize) -> (usize, usize) {
-        (index / self.shape.1, index % self.shape.1)
+    fn start(&self) -> (usize, usize) {
+        let start = self
+            .tiles
+            .iter()
+            .find_position(|&x| *x == Tile::Start)
+            .unwrap()
+            .0;
+        (start / self.shape.1, start % self.shape.1)
+    }
+
+    fn valid_starts(&self) -> Vec<&Tile> {
+        let start = self.start();
+        let north = if start.0 > 0 {
+            Some(self.get((start.0 - 1, start.1)))
+        } else {
+            None
+        };
+        let south = if start.0 < self.shape.0 - 1 {
+            Some(self.get((start.0 + 1, start.1)))
+        } else {
+            None
+        };
+        let west = if start.1 > 0 {
+            Some(self.get((start.0, start.1 - 1)))
+        } else {
+            None
+        };
+        let east = if start.1 < self.shape.1 - 1 {
+            Some(self.get((start.0, start.1 + 1)))
+        } else {
+            None
+        };
+
+        let mut res = vec![];
+
+        match (north, south) {
+            (Some(Tile::NS | Tile::SW | Tile::SE), Some(Tile::NS | Tile::NW | Tile::NE)) => {
+                res.push(&Tile::NS)
+            }
+            _ => {}
+        }
+        match (east, west) {
+            (Some(Tile::EW | Tile::NW | Tile::SW), Some(Tile::EW | Tile::SE | Tile::NE)) => {
+                res.push(&Tile::EW)
+            }
+            _ => {}
+        }
+        match (east, north) {
+            (Some(Tile::EW | Tile::NW | Tile::SW), Some(Tile::NS | Tile::SW | Tile::SE)) => {
+                res.push(&Tile::NE)
+            }
+            _ => {}
+        }
+        match (east, south) {
+            (Some(Tile::EW | Tile::NW | Tile::SW), Some(Tile::NS | Tile::NW | Tile::NE)) => {
+                res.push(&Tile::SE)
+            }
+            _ => {}
+        }
+        match (west, south) {
+            (Some(Tile::EW | Tile::SE | Tile::NE), Some(Tile::NS | Tile::NW | Tile::NE)) => {
+                res.push(&Tile::SW)
+            }
+            _ => {}
+        }
+        match (west, north) {
+            (Some(Tile::EW | Tile::SE | Tile::NE), Some(Tile::NS | Tile::SW | Tile::SE)) => {
+                res.push(&Tile::NW)
+            }
+            _ => {}
+        }
+        res
+    }
+
+    fn get(&self, position: (usize, usize)) -> &Tile {
+        &self.tiles[position.0 * self.shape.1 + position.1]
     }
 
     fn solve(&self, start_as: &Tile) -> Option<Vec<(usize, usize)>> {
         println!("\n---\nSolving for {:?}", start_as);
-        let start = self.compute_position(
-            self.tiles
-                .iter()
-                .find_position(|&x| *x == Tile::Start)
-                .unwrap()
-                .0,
-        );
+        println!("Valid starts: {:?}", self.valid_starts());
         let direction = match start_as {
             Tile::EW | Tile::NW | Tile::SW => Direction::West,
             Tile::NE | Tile::SE => Direction::East,
             Tile::NS => Direction::North,
             Tile::Start | Tile::Ground => panic!("Invalid value"),
         };
+        let start = self.start();
         let mut path = vec![];
         let mut is_loop = false;
         let mut step = Some((direction, start));
@@ -171,15 +240,16 @@ pub fn part1(lines: Vec<String>) -> Option<i128> {
 
 pub fn part2(lines: Vec<String>) -> Option<i128> {
     let mut sewer = Sewer::new(lines);
-    let (direction, solution) = vec![Tile::SW, Tile::NE, Tile::NS]
+    let (direction, solution) = sewer
+        .valid_starts()
         .iter()
-        .filter_map(|x| sewer.solve(x).map(|solution| (x.clone(), solution)))
+        .filter_map(|&x| sewer.solve(x).map(|solution| (x.clone(), solution)))
         .nth(0)
         .unwrap();
     let solution_lookup: HashSet<_> = solution.iter().collect();
     println!("wtf {:?} {:?}", direction.clone(), solution[0]);
 
-    sewer.tiles[solution[0].0 * sewer.shape.1 + solution[0].1] = direction;
+    sewer.tiles[solution[0].0 * sewer.shape.1 + solution[0].1] = direction.clone();
     let mut inside_count = 0;
     for row_num in 0..sewer.shape.0 {
         let mut state = State::Outside;
