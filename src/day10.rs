@@ -27,17 +27,6 @@ struct Sewer {
     shape: (usize, usize),
 }
 
-// struct Position {
-//     row: usize,
-//     col: usize,
-// }
-
-// impl Position {
-//     fn new(row: usize, col: usize) -> Self {
-//         Self { row, col }
-//     }
-// }
-
 impl Sewer {
     fn new(lines: Vec<String>) -> Self {
         let shape = (lines.len(), lines[0].len());
