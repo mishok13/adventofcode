@@ -14,15 +14,15 @@ pub enum Direction {
     Right,
 }
 
-struct Column<T> {
-    tiles: Vec<T>,
-    index: usize,
-}
+// struct Column<T> {
+//     tiles: Vec<T>,
+//     index: usize,
+// }
 
-struct Row<T> {
-    tiles: Vec<T>,
-    index: usize,
-}
+// struct Row<T> {
+//     tiles: Vec<T>,
+//     index: usize,
+// }
 
 impl<T> Vec2D<T> {
     pub fn get(&self, position: &(usize, usize)) -> Option<&T> {

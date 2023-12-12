@@ -1,4 +1,4 @@
-use itertools::{repeat_n, Itertools};
+use itertools::Itertools;
 
 use crate::util::Vec2D;
 
@@ -6,10 +6,6 @@ enum Tile {
     Empty,
     Full,
 }
-
-// struct Tile {
-//     value: TileValue,
-// }
 
 impl Vec2D<Tile> {
     fn new(lines: Vec<String>) -> Self {
@@ -32,11 +28,10 @@ impl Vec2D<Tile> {
         self.rows()
             .iter()
             .enumerate()
-            .filter(|(index, row)| {
-                row.iter().map(|pos| self.get(pos)).all(|x| match x {
-                    Some(Tile::Empty) => true,
-                    _ => false,
-                })
+            .filter(|(_, row)| {
+                row.iter()
+                    .map(|pos| self.get(pos))
+                    .all(|x| matches!(x, Some(Tile::Empty)))
             })
             .map(|(index, _)| index)
             .collect()
@@ -46,35 +41,14 @@ impl Vec2D<Tile> {
         self.columns()
             .iter()
             .enumerate()
-            .filter(|(index, column)| {
-                column.iter().map(|pos| self.get(pos)).all(|x| match x {
-                    Some(Tile::Empty) => true,
-                    _ => false,
-                })
+            .filter(|(_, column)| {
+                column
+                    .iter()
+                    .map(|pos| self.get(pos))
+                    .all(|x| matches!(x, Some(Tile::Empty)))
             })
             .map(|(index, _)| index)
             .collect()
-    }
-
-    fn old(&mut self) {
-        let mut empty_rows = self.empty_rows();
-        let mut empty_columns = self.empty_columns();
-
-        for (index, &row_number) in empty_rows.iter().enumerate() {
-            for _ in 0..self.shape.1 {
-                let position = (index + row_number) * self.shape.1;
-                self.tiles.insert(position, Tile::Empty);
-            }
-        }
-        self.shape.0 += empty_rows.len();
-
-        for (index, &column_number) in empty_columns.iter().enumerate() {
-            for row_number in 0..self.shape.0 {
-                let position = row_number * (1 + self.shape.1) + column_number + index;
-                self.tiles.insert(position, Tile::Empty);
-            }
-            self.shape.1 += 1;
-        }
     }
 
     fn distance(&self, from: (usize, usize), to: (usize, usize), multiplier: usize) -> usize {
@@ -109,7 +83,7 @@ impl Vec2D<Tile> {
                     _ => panic!("wtf"),
                 }
             }
-            print!("\n");
+            println!();
         }
     }
 
@@ -117,17 +91,10 @@ impl Vec2D<Tile> {
         self.tiles
             .iter()
             .enumerate()
-            .filter(|(_, t)| match t {
-                Tile::Full => true,
-                _ => false,
-            })
+            .filter(|(_, t)| matches!(t, Tile::Full))
             .map(|(index, _)| (index / self.shape.1, index % self.shape.1))
             .collect()
     }
-}
-
-fn distance(pos1: (usize, usize), pos2: (usize, usize)) -> usize {
-    pos1.0.max(pos2.0) - pos1.0.min(pos2.0) + pos1.1.max(pos2.1) - pos1.1.min(pos2.1)
 }
 
 pub fn part1(lines: Vec<String>) -> Option<usize> {
