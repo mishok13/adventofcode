@@ -226,11 +226,11 @@ enum State {
 
 pub fn part1(lines: Vec<String>) -> Option<i128> {
     let sewer = Sewer::new(lines);
-    vec![Tile::EW, Tile::NE, Tile::NS]
+    [Tile::EW, Tile::NE, Tile::NS]
         .iter()
         .filter_map(|x| sewer.solve(x))
         .map(|x| (x.len() / 2) as i128)
-        .nth(0)
+        .next()
 
     // println!("west {:?}\n====\n", sewer.solve(Tile::EW));
     // println!("east {:?}\n====\n", sewer.solve(Tile::NE));
@@ -244,7 +244,7 @@ pub fn part2(lines: Vec<String>) -> Option<i128> {
         .valid_starts()
         .iter()
         .filter_map(|&x| sewer.solve(x).map(|solution| (x.clone(), solution)))
-        .nth(0)
+        .next()
         .unwrap();
     let solution_lookup: HashSet<_> = solution.iter().collect();
     println!("wtf {:?} {:?}", direction.clone(), solution[0]);
