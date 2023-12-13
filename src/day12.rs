@@ -1,4 +1,7 @@
-use std::{collections::HashSet, iter};
+use std::{collections::HashSet, iter, sync::mpsc::channel};
+
+use itertools::Itertools;
+use threadpool::ThreadPool;
 
 fn parse_numbers(s: &str) -> Vec<usize> {
     s.split(',').map(|part| part.parse().unwrap()).collect()
@@ -46,10 +49,23 @@ fn find_matches(pattern: &[Symbol], length: &usize) -> Vec<(usize, usize)> {
 }
 
 fn solve(pattern: &[Symbol], lengths: &[usize]) -> Vec<Vec<(usize, usize)>> {
-    let possibilities = lengths
+    let possibilities: Vec<_> = lengths
         .iter()
-        .map(|length| find_matches(pattern, length))
+        .enumerate()
+        .map(|(index, length)| {
+            let start = lengths[0..index].iter().sum::<usize>() + index;
+            let end = pattern.len() - lengths[index + 1..lengths.len()].iter().sum::<usize>();
+            let result: Vec<_> = find_matches(&pattern[start..end], length)
+                .iter()
+                .map(|x| (x.0 + start, x.1 + start))
+                .collect();
+            result
+        })
         .collect();
+    println!(
+        "Found {:?} solutions. Shaking...",
+        possibilities.iter().map(|v| v.len()).fold(1, |a, b| a * b)
+    );
     shake(vec![], possibilities)
         .into_iter()
         .filter(|v| v.len() == lengths.len())
@@ -121,7 +137,7 @@ fn unfold(s: &str, separator: char, times: usize) -> String {
 }
 
 pub fn part2(lines: Vec<String>) -> Option<usize> {
-    lines
+    let parsed = lines
         .iter()
         .map(|line| {
             line.split_once(' ')
@@ -133,20 +149,34 @@ pub fn part2(lines: Vec<String>) -> Option<usize> {
                 })
                 .unwrap()
         })
-        .map(|(pattern, lengths)| {
-            let solution = solve(&pattern, &lengths);
-            for x in solution.iter() {
-                let mut s = vec!['.'; pattern.len()];
-                for pos in x {
-                    for h in pos.0..pos.1 {
-                        s[h] = '#';
-                    }
-                }
-            }
-            solution
+        .collect::<Vec<_>>();
+    let pool = ThreadPool::new(24);
+    let jobs = parsed.len();
+    let (tx, rx) = channel();
+    for (pattern, lengths) in parsed {
+        let tx = tx.clone();
+        pool.execute(move || {
+            tx.send(solve(&pattern, &lengths).len()).expect("Solved");
         })
-        .map(|v| v.len())
-        .reduce(|a, b| a + b)
+    }
+    rx.iter().take(jobs).reduce(|a, b| a + b)
+    // parsed
+    //     .iter()
+    //     .map(|(pattern, lengths)| {
+    //         solve(&pattern, &lengths)
+    //         // let solution = solve(&pattern, &lengths);
+    //         // for x in solution.iter() {
+    //         //     let mut s = vec!['.'; pattern.len()];
+    //         //     for pos in x {
+    //         //         for h in pos.0..pos.1 {
+    //         //             s[h] = '#';
+    //         //         }
+    //         //     }
+    //         // }
+    //         // solution
+    //     })
+    //     .map(|v| v.len())
+    //     .reduce(|a, b| a + b);
 }
 
 #[test]
