@@ -1,4 +1,8 @@
-use std::{collections::HashSet, iter, sync::mpsc::channel};
+use std::{
+    collections::{HashMap, HashSet},
+    iter,
+    sync::mpsc::channel,
+};
 
 use itertools::Itertools;
 use threadpool::ThreadPool;
@@ -46,6 +50,83 @@ fn find_matches(pattern: &[Symbol], length: &usize) -> Vec<(usize, usize)> {
         .map(|start| (start + 1, start + length + 1))
         .collect::<Vec<_>>()
         .into()
+}
+
+struct Solver {
+    cache: HashMap<(String, Vec<usize>), usize>,
+}
+
+impl Solver {
+    fn new() -> Self {
+        Self {
+            cache: HashMap::new(),
+        }
+    }
+
+    fn solve(&mut self, pattern: String, groups: Vec<usize>) -> usize {
+        if groups.is_empty() {
+            if pattern.contains('#') {
+                0
+            } else {
+                1
+            }
+        } else if pattern.is_empty() {
+            0
+        } else {
+            let next_char = pattern.chars().next().unwrap();
+            let group = groups[0];
+            match next_char {
+                '.' => self.solve(pattern[1..pattern.len()].to_string(), groups),
+                '?' => {
+                    self.solve(pattern[1..pattern.len()].to_string(), groups.clone()) + {
+                        if pattern.chars().take(group).any(|c| c == '.') {
+                            0
+                        } else {
+                            if pattern.len() == group {
+                                if groups.len() == 1 {
+                                    1
+                                } else {
+                                    0
+                                }
+                            } else {
+                                if pattern.chars().nth(group).unwrap() == '#' {
+                                    0
+                                } else {
+                                    self.solve(
+                                        pattern[group..pattern.len()].to_string(),
+                                        groups[1..groups.len()].to_vec(),
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+                '#' => {
+                    if pattern.chars().take(group).any(|c| c == '.') {
+                        0
+                    } else {
+                        if pattern.len() == group {
+                            if groups.len() == 1 {
+                                1
+                            } else {
+                                0
+                            }
+                        } else {
+                            if pattern.chars().nth(group).unwrap() == '#' {
+                                0
+                            } else {
+                                self.solve(
+                                    pattern[group..pattern.len()].to_string(),
+                                    groups[1..groups.len()].to_vec(),
+                                )
+                            }
+                        }
+                    }
+                }
+                _ => 0,
+            }
+        }
+    }
 }
 
 fn solve(pattern: &[Symbol], lengths: &[usize]) -> Vec<Vec<(usize, usize)>> {
@@ -115,15 +196,16 @@ fn shake(
 }
 
 pub fn part1(lines: Vec<String>) -> Option<usize> {
+    let mut solver = Solver::new();
     lines
         .iter()
         .map(|line| {
             line.split_once(' ')
-                .map(|(pattern, numbers)| (parse_pattern(pattern), parse_numbers(numbers)))
+                .map(|(pattern, numbers)| (pattern, parse_numbers(numbers)))
                 .unwrap()
         })
-        .map(|(pattern, lengths)| solve(&pattern, &lengths))
-        .map(|v| v.len())
+        .map(|(pattern, lengths)| solver.solve(pattern.into(), lengths))
+        // .map(|v| v.len())
         .reduce(|a, b| a + b)
 }
 
