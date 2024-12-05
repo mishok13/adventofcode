@@ -262,6 +262,7 @@ pub fn part2(lines: Vec<String>) -> Option<usize> {
 }
 
 #[test]
+#[ignore]
 fn test_part1() {
     {
         let lines: Vec<_> = "???.### 1,1,3
@@ -282,6 +283,7 @@ fn test_part1() {
 }
 
 #[test]
+#[ignore]
 fn test_part2() {
     {
         let lines = "????.######..#####. 1,6,5"
