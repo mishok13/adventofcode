@@ -1,6 +1,6 @@
 use std::{collections::HashMap, iter::zip};
 
-use itertools::{sorted, Itertools};
+use itertools::sorted;
 
 pub fn part1<T: ToString>(lines: Vec<T>) -> Option<String> {
     let pairs = lines.iter().map(|line| {

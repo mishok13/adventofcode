@@ -5,6 +5,8 @@ mod adventofcode;
 use clap::Parser;
 use std::fs::read_to_string;
 use std::path::PathBuf;
+use tracing_subscriber::layer::SubscriberExt;
+use tracing_subscriber::util::SubscriberInitExt;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -15,6 +17,11 @@ struct Cli {
 }
 
 fn main() {
+    let log = tracing_subscriber::fmt::layer()
+        .pretty()
+        .with_writer(std::io::stderr);
+    tracing_subscriber::registry().with(log).init();
+
     let cli = Cli::parse();
     let lines = cli
         .input
@@ -30,6 +37,7 @@ fn main() {
         ("1", "1") => adventofcode::day01::part1(lines),
         ("1", "2") => adventofcode::day01::part2(lines),
         ("2", "1") => adventofcode::day02::part1(lines),
+        ("2", "2") => adventofcode::day02::part2(lines),
         // ("1", "2") => day01_2(lines),
         // ("2", "1") => day02_1(lines),
         // ("2", "2") => day02_2(lines),
