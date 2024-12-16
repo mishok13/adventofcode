@@ -1,5 +1,6 @@
-mod day01;
 pub mod util;
+
+mod adventofcode;
 
 use clap::Parser;
 use regex::Regex;
@@ -29,7 +30,7 @@ fn main() {
         })
         .unwrap();
     let result = match (cli.day.as_str(), cli.task.as_str()) {
-        ("1", "1") => adventofcode::d01p1(lines),
+        ("1", "1") => adventofcode::day01::part1(lines),
         // ("1", "2") => day01_2(lines),
         // ("2", "1") => day02_1(lines),
         // ("2", "2") => day02_2(lines),
@@ -57,7 +58,7 @@ fn main() {
     };
 
     match result {
-        Some(lines) => println!("{}", lines),
+        Some(lines) => println!("{:?}", lines),
         None => println!("No solution available"),
     }
 }
