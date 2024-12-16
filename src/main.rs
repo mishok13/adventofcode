@@ -3,9 +3,6 @@ pub mod util;
 mod adventofcode;
 
 use clap::Parser;
-use regex::Regex;
-use std::char;
-use std::collections::HashSet;
 use std::fs::read_to_string;
 use std::path::PathBuf;
 
@@ -31,6 +28,8 @@ fn main() {
         .unwrap();
     let result = match (cli.day.as_str(), cli.task.as_str()) {
         ("1", "1") => adventofcode::day01::part1(lines),
+        ("1", "2") => adventofcode::day01::part2(lines),
+        ("2", "1") => adventofcode::day02::part1(lines),
         // ("1", "2") => day01_2(lines),
         // ("2", "1") => day02_1(lines),
         // ("2", "2") => day02_2(lines),
@@ -58,7 +57,7 @@ fn main() {
     };
 
     match result {
-        Some(lines) => println!("{:?}", lines),
+        Some(result) => println!("{}", result),
         None => println!("No solution available"),
     }
 }
