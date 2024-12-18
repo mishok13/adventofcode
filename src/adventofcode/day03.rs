@@ -40,9 +40,9 @@ fn find_ranges(line: &str) -> Vec<String> {
     loop {
         let chunk = line.get(start..line.len()).unwrap();
         tracing::debug!("start {} {}", start, chunk);
-        if let Some(stop) = stop_pattern.find(chunk).map(|m| m.start()) {
-            tracing::debug!("stop {} {}", stop, line.get(stop..).unwrap());
-            result.push(line.get(start..start + stop).unwrap().into());
+        if let Some(stop) = stop_pattern.find(chunk).map(|m| m.end()) {
+            tracing::debug!("stop {} {}", stop, chunk.get(..stop).unwrap());
+            result.push(chunk.get(..stop).unwrap().into());
             if let Some(new_start) = start_pattern
                 .find(chunk.get(stop..).unwrap())
                 .map(|m| m.end())
@@ -60,8 +60,6 @@ fn find_ranges(line: &str) -> Vec<String> {
 }
 
 pub fn part2<T: ToString>(lines: Vec<T>) -> Option<String> {
-    // find do's and don'ts, find acceptable range and feed said substring into `count`
-    // that's it?
     Some(
         lines
             .iter()

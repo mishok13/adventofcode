@@ -40,6 +40,8 @@ fn main() {
         ("2", "2") => adventofcode::day02::part2(lines),
         ("3", "1") => adventofcode::day03::part1(lines),
         ("3", "2") => adventofcode::day03::part2(lines),
+        ("4", "1") => adventofcode::day04::part1(lines).map(|x| x.to_string()),
+        ("4", "2") => adventofcode::day04::part2(lines).map(|x| x.to_string()),
         // ("1", "2") => day01_2(lines),
         // ("2", "1") => day02_1(lines),
         // ("2", "2") => day02_2(lines),
